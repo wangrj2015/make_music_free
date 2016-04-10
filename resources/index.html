@@ -63,7 +63,7 @@
     			$("#urllabel").html("<font color='red'>下载链接不能为空</font>");
     			return;
     		}
-    		$.get("http://localhost:8080/xmusic?song_url="+url,function(result){
+    		$.get("/xmusic?song_url="+url,function(result){
     			$("#result").html("");
     			for(var i=0;i<result.length;i++){
     				data = result[i]
@@ -86,7 +86,7 @@
             $("#suggestDiv").hide();
             return;
           }
-          $.post("http://localhost:8080/suggest",{'info':suggestInfo},function(){
+          $.post("/suggest",{'info':suggestInfo},function(){
             $("#suggestDiv").hide();
           });
       });
