@@ -13,8 +13,7 @@
     	<div class="nav-wrapper">
     		<a href="#" class="brand-logo">&nbsp;&nbsp;&nbsp;&nbsp;Free music</a>
     		<ul id="nav-mobile" class="right hide-on-med-and-down">
-      			<li><a href="#">提点意见</a></li>
-      			<li><a href="#">donate</a></li>
+      			<li><a id='suggest' href="#">提点意见</a></li>
     		</ul>
     	</div>
   	</nav>
@@ -30,10 +29,28 @@
  			</a>
  		</div>
 
- 		<div id="result" class="collection" style='border-width: 0px;'>
-     			
-   		</div>
+ 		<div id="result" class="collection" style='border-width: 0px;'></div>
+
+  </div>
+
+  <div id='suggestDiv' class="grey lighten-3 z-depth-4" style='display:none;width:400px; position: fixed; top: 35%; left: 50%; margin-left:-200px;'>
+    <div class="row">
+      <form class="col s12">
+        <div class="row">
+          <div class="input-field col s10">
+            <i class="mdi-editor-mode-edit prefix"></i>
+            <textarea id="suggestInfo" class="materialize-textarea"></textarea>
+            <label for="suggestInfo">写下你的建议</label>
+          </div>
+        </div>
+      </form>
     </div>
+    <div style='margin-left: 130px;margin-bottom: 20px'>
+      <button id='submitBtn' class="btn waves-effect waves-light" type="submit" name="action">提交
+        <i class="mdi-content-send right"></i>
+      </button>
+    </div>
+  </div>
 
 <!--Import jQuery before materialize.js-->
 <script type="text/javascript" src="js/jquery-2.1.1.min.js"></script>
@@ -52,12 +69,28 @@
     				data = result[i]
     				title = data['title']
     				pic = data['pic']
-    				html = '<a href="'+data['location']+'"><div style="padding:30px;float:left;"><img id="pic'+i+'" src="'+pic+'"/><span>'+title+'</span></div></a>';
+    				html = '<a href="'+data['location']+'"><div style="padding:30px;float:left;"><div>'+title+'</div><img id="pic'+i+'" src="'+pic+'"/></div></a>';
     				$("#result").append(html);
     			}
 
     		},"json");
     	});
+
+      $("#suggest").click(function(){
+          $("#suggestDiv").show();
+      });
+
+      $("#submitBtn").click(function(){
+          suggestInfo = $("#suggestInfo").val();
+          if("" == suggestInfo){
+            $("#suggestDiv").hide();
+            return;
+          }
+          $.post("http://localhost:8080/suggest",{'info':suggestInfo},function(){
+            $("#suggestDiv").hide();
+          });
+      });
+
     });
 </script>
 </body>

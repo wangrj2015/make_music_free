@@ -5,11 +5,13 @@ import tornado.web
 import config
 from logger import LoggerFactory
 from xmusic.xmusic_handler import XMusicHandler
+from suggest_handler import SuggestHandler
 
 
 
 application = tornado.web.Application([
 	(r"/xmusic", XMusicHandler),
+	(r"/suggest", SuggestHandler),
 	(r"/download/(.*)", tornado.web.StaticFileHandler, {"path": config.resource_dir}),
 ])
 
