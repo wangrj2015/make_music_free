@@ -20,7 +20,7 @@ class XMusicHandler(tornado.web.RequestHandler):
 	def get(self):
 		try:
 			song_url = self.get_argument('song_url')
-			logger.info('song_url:%s' % song_url)
+			logger.info('IP:'+self.request.remote_ip+' song_url:' + song_url)
 			#单首歌
 			if song_url.find('song') != -1:
 				result = self._handle(song_url,r'song/(.*?)\?',u'http://www.xiami.com/song/playlist/id/{0}/object_name/default/object_id/0/cat/json')
