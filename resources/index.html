@@ -1,0 +1,64 @@
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<!--Import materialize.css-->
+ <link type="text/css" rel="stylesheet" href="css/materialize.min.css"  media="screen,projection"/>
+  <!--Let browser know website is optimized for mobile-->
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+
+<title>尽请下载</title>
+</head>
+<body>
+	<nav>
+    	<div class="nav-wrapper">
+    		<a href="#" class="brand-logo">&nbsp;&nbsp;&nbsp;&nbsp;Free music</a>
+    		<ul id="nav-mobile" class="right hide-on-med-and-down">
+      			<li><a href="#">提点意见</a></li>
+      			<li><a href="#">donate</a></li>
+    		</ul>
+    	</div>
+  	</nav>
+
+	<div class="row" style="text-align: center;max-width: 888px">
+        <div class="input-field col s12">
+          <input id="url" type="text" class="validate">
+          <label id="urllabel" for="url">歌曲链接(支持单曲，专辑，精选集，例:http://www.xiami.com/song/1775256504?spm=a1z1s.3521865.23309997.35.7EnexJ)</label>
+        </div>
+		<div>
+		 	<a id="getSong" class="btn-floating btn-large waves-effect waves-light blue">
+ 				<i class="mdi-action-search"></i>
+ 			</a>
+ 		</div>
+
+ 		<div id="result" class="collection" style='border-width: 0px;'>
+     			
+   		</div>
+    </div>
+
+<!--Import jQuery before materialize.js-->
+<script type="text/javascript" src="js/jquery-2.1.1.min.js"></script>
+<script type="text/javascript" src="js/materialize.min.js"></script>
+<script type="text/javascript">
+	$(document).ready(function(){
+    	$("#getSong").click(function(){
+    		var url = $("#url").val();
+    		if("" == url){
+    			$("#urllabel").html("<font color='red'>下载链接不能为空</font>");
+    			return;
+    		}
+    		$.get("http://localhost:8080/xmusic?song_url="+url,function(result){
+    			$("#result").html("");
+    			for(var i=0;i<result.length;i++){
+    				data = result[i]
+    				title = data['title']
+    				pic = data['pic']
+    				html = '<a href="'+data['location']+'"><div style="padding:30px;float:left;"><img id="pic'+i+'" src="'+pic+'"/><span>'+title+'</span></div></a>';
+    				$("#result").append(html);
+    			}
+
+    		},"json");
+    	});
+    });
+</script>
+</body>
+</html>
