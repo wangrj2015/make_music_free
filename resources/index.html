@@ -18,10 +18,10 @@
     	</div>
   	</nav>
 
-	<div class="row" style="text-align: center;max-width: 888px">
+	<div class="row" style="text-align: center;max-width: 1000px">
         <div class="input-field col s12">
           <input id="url" type="text" class="validate">
-          <label id="urllabel" for="url">歌曲链接(支持单曲，专辑，精选集，例:http://www.xiami.com/song/1775256504?spm=a1z1s.3521865.23309997.35.7EnexJ)</label>
+          <label id="urllabel" for="url">歌曲名(例:梦一场)、歌曲链接(支持*虾米网*单曲/专辑/精选集，例:http://www.xiami.com/song/1775256504)</label>
         </div>
 		<div>
 		 	<a id="getSong" class="btn-floating btn-large waves-effect waves-light blue">
@@ -29,7 +29,10 @@
  			</a>
  		</div>
 
- 		<div id="result" class="collection" style='border-width: 0px;'></div>
+    <div id='progress' class="progress" style='display:none;'><div class="indeterminate"></div></div>
+ 		<div id="result" class="collection" style='border-width: 0px;'>
+        
+    </div>
 
   </div>
 
@@ -63,8 +66,15 @@
     			$("#urllabel").html("<font color='red'>下载链接不能为空</font>");
     			return;
     		}
+        $("#result").html("");
+        $("#progress").show();
     		$.get("/xmusic?song_url="+url,function(result){
-    			$("#result").html("");
+          $("#progress").hide();
+          $("#result").html("");
+          if(!result){
+            $("#result").html("<h3>找不到该歌曲</h3>");
+            return;
+          }
     			for(var i=0;i<result.length;i++){
     				data = result[i]
     				title = data['title']

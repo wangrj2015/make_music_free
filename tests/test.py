@@ -56,7 +56,10 @@ if __name__ == '__main__':
 	#match = re.search(r'song/(.*?)\?',u'http://www.xiami.com/song/1774926422?spm=a1z1s.6659513.0.0.Pd9hGE')
 	#print match.group(1)
 
-	print decode_url()
+	#print decode_url()
 	#print 'ascde'[-1:7]
 
+	match = re.search(r'song/(\d+).*?title="(.*?)"',u'<td class="song_name"><a href="javascript:;" class="slide_down" title="该艺人演唱的其他版本"></a>									<a target="_blank" href="http://www.xiami.com/song/29609" title="童话"><b class="key_red">童话</b></a></td>')
+	print match.group(1)
+	print match.group(2)
 
