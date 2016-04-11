@@ -21,7 +21,7 @@
 	<div class="row" style="text-align: center;max-width: 1000px">
         <div class="input-field col s12">
           <input id="url" type="text" class="validate">
-          <label id="urllabel" for="url">歌曲名(例:梦一场)、歌曲链接(支持*虾米网*单曲/专辑/精选集，例:http://www.xiami.com/song/1775256504)</label>
+          <label id="urllabel" for="url">歌曲名(例:梦一场)、歌手名</label>
         </div>
 		<div>
 		 	<a id="getSong" class="btn-floating btn-large waves-effect waves-light blue">
@@ -99,6 +99,12 @@
           $.post("/suggest",{'info':suggestInfo},function(){
             $("#suggestDiv").hide();
           });
+      });
+
+      $("#url").keyup(function(event){
+          if(event.keyCode == "13"){
+            $("#getSong").click();
+          }
       });
 
     });
