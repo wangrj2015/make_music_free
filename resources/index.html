@@ -79,7 +79,7 @@
     				data = result[i]
     				title = data['title']
     				pic = data['pic']
-    				html = '<a href="'+data['location']+'"><div style="padding:30px;float:left;"><div>'+title+'</div><img id="pic'+i+'" src="'+pic+'"/></div></a>';
+    				html = '<div style="padding:30px;float:left;"><a href="'+data['location']+'"><div>'+title+'</div></a><img id="pic'+i+'" src="'+pic+'"/></div>';
     				$("#result").append(html);
     			}
 
