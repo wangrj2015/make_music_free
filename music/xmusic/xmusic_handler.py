@@ -31,7 +31,7 @@ class XMusicHandler(tornado.web.RequestHandler):
 			if len(song_url)==0 :
 				self.write("false")
 				return
-			logger.info('IP:'+self.request.remote_ip+' song_url:' + song_url)
+			logger.info('IP:'+self.request.headers.get("X-Real-Ip",'')+' song_url:' + song_url)
 			#单首歌
 			if song_url.find('song') != -1:
 				self._handle(song_url,r'song/(\d+).*',u'http://www.xiami.com/song/playlist/id/{0}/object_name/default/object_id/0/cat/json')
