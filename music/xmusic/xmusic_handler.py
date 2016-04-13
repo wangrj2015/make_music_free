@@ -11,6 +11,7 @@ import util
 import traceback
 from pyquery import PyQuery
 import lxml
+from urllib import quote
 
 logger = LoggerFactory.getLogger()
 
@@ -65,8 +66,7 @@ class XMusicHandler(tornado.web.RequestHandler):
 
 	#根据歌曲名搜索
 	def _search_song(self,song,template):
-		url = 'http://www.xiami.com/search/song?key=' + song
-		
+		url = 'http://www.xiami.com/search/song?key=' + quote(song)
 		@tornado.gen.coroutine
 		def _callback(response):
 			pq = PyQuery(response.body)
