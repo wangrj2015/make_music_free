@@ -76,7 +76,7 @@ class XMusicHandler(tornado.web.RequestHandler):
 			chkboxs = pq(".track_list .chkbox")
 
 			location_urls = []
-			song_artists = []
+			song_artists = {}
 			for i in range(song_tds.size()):
 				song_td = song_tds[i]
 				song_artist = song_artist_tds[i]
@@ -84,13 +84,13 @@ class XMusicHandler(tornado.web.RequestHandler):
 				song_html = lxml.html.tostring(song_td,encoding='utf-8')
 				chk_html = lxml.html.tostring(chkbox,encoding='utf-8')
 				song_artist = PyQuery(song_artist)("a").text()
-				song_artists.append(song_artist)
 				if chk_html.find('disabled') != -1:
 					continue
 
 				match = re.search(r'song/(\d+).*',song_html)
 				if match:
 					location_urls.append(template.format(match.group(1)))
+					song_artists[match.group(1)] = song_artist
 			resp = yield [AsyncHTTPClient().fetch(HTTPRequest(url=locationUrl,headers=self.headers)) for locationUrl in location_urls]
 
 			return_vals = []
@@ -98,7 +98,8 @@ class XMusicHandler(tornado.web.RequestHandler):
 				response = resp[i]
 				result = self._parse_result(response.body)
 				result_json = tornado.escape.json_decode(result)[0];
-				result_json['title'] = result_json['title'] + '--' + song_artists[i]
+				song_id = result_json['song_id']
+				result_json['title'] = result_json['title'] + '--' + song_artists[song_id]
 				return_vals.append(result_json)
 			self.write(tornado.escape.json_encode(return_vals))	
 			self.finish()
@@ -115,6 +116,7 @@ class XMusicHandler(tornado.web.RequestHandler):
 			return_val['title'] = song['title']
 			return_val['pic'] = song['pic']
 			return_val['lyric'] = song['lyric_url']
+			return_val['song_id'] = song['song_id']
 			return_val['location'] = util.decode_location(song['location'])
 
 			return_vals.append(return_val)
