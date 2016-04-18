@@ -6,6 +6,7 @@ import config
 from logger import LoggerFactory
 from xmusic.xmusic_handler import XMusicHandler
 from suggest_handler import SuggestHandler
+import sys
 
 
 
@@ -16,6 +17,6 @@ application = tornado.web.Application([
 ])
 
 if __name__ == "__main__":
-    application.listen(config.application_port)
-    LoggerFactory.getLogger().info("server starting at port: %d" % config.application_port)
+    application.listen(sys.argv[1])
+    LoggerFactory.getLogger().info("server starting at port: %s" % sys.argv[1])
     tornado.ioloop.IOLoop.instance().start()

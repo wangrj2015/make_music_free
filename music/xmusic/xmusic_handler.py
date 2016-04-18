@@ -70,39 +70,45 @@ class XMusicHandler(tornado.web.RequestHandler):
 		
 		@tornado.gen.coroutine
 		def _callback(response):
-			pq = PyQuery(response.body)
-			song_tds = pq(".track_list .song_name")
-			song_artist_tds = pq(".track_list .song_artist")
-			chkboxs = pq(".track_list .chkbox")
+			try:
+				pq = PyQuery(response.body)
+				song_tds = pq(".track_list .song_name")
+				song_artist_tds = pq(".track_list .song_artist")
+				chkboxs = pq(".track_list .chkbox")
 
-			location_urls = []
-			song_artists = {}
-			for i in range(song_tds.size()):
-				song_td = song_tds[i]
-				song_artist = song_artist_tds[i]
-				chkbox = chkboxs[i]
-				song_html = lxml.html.tostring(song_td,encoding='utf-8')
-				chk_html = lxml.html.tostring(chkbox,encoding='utf-8')
-				song_artist = PyQuery(song_artist)("a").text()
-				if chk_html.find('disabled') != -1:
-					continue
+				location_urls = []
+				song_artists = {}
+				for i in range(song_tds.size()):
+					song_td = song_tds[i]
+					song_artist = song_artist_tds[i]
+					chkbox = chkboxs[i]
+					song_html = lxml.html.tostring(song_td,encoding='utf-8')
+					chk_html = lxml.html.tostring(chkbox,encoding='utf-8')
+					song_artist = PyQuery(song_artist)("a").text()
+					if chk_html.find('disabled') != -1:
+						continue
 
-				match = re.search(r'song/(\d+).*',song_html)
-				if match:
-					location_urls.append(template.format(match.group(1)))
-					song_artists[match.group(1)] = song_artist
-			resp = yield [AsyncHTTPClient().fetch(HTTPRequest(url=locationUrl,headers=self.headers)) for locationUrl in location_urls]
+					match = re.search(r'song/(\d+).*',song_html)
+					if match:
+						location_urls.append(template.format(match.group(1)))
+						song_artists[match.group(1)] = song_artist
+				resp = yield [AsyncHTTPClient().fetch(HTTPRequest(url=locationUrl,headers=self.headers)) for locationUrl in location_urls]
 
-			return_vals = []
-			for i in range(len(resp)):
-				response = resp[i]
-				result = self._parse_result(response.body)
-				result_json = tornado.escape.json_decode(result)[0];
-				song_id = result_json['song_id']
-				result_json['title'] = result_json['title'] + '--' + song_artists[song_id]
-				return_vals.append(result_json)
-			self.write(tornado.escape.json_encode(return_vals))	
-			self.finish()
+				return_vals = []
+				for i in range(len(resp)):
+					response = resp[i]
+					result = self._parse_result(response.body)
+					result_json = tornado.escape.json_decode(result)[0];
+					song_id = result_json['song_id']
+					result_json['title'] = result_json['title'] + '--' + song_artists[song_id]
+					return_vals.append(result_json)
+				self.write(tornado.escape.json_encode(return_vals))	
+				self.finish()
+			except Exception as error:
+				logger.exception('Exception loggered')
+				self.write("false")
+				self.finish()
+
 
 		AsyncHTTPClient().fetch(HTTPRequest(url=url,headers=self.headers),_callback)
 
