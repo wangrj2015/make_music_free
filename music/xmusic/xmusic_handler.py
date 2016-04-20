@@ -7,6 +7,7 @@ from tornado.httpclient import AsyncHTTPClient,HTTPRequest
 import requests
 import re
 from logger import LoggerFactory
+from elastic_helper import ElasticHelper
 import util
 import traceback
 from pyquery import PyQuery
@@ -35,7 +36,6 @@ class XMusicHandler(tornado.web.RequestHandler):
 			#单首歌
 			if song_url.find('song') != -1:
 				self._handle(song_url,r'song/(\d+).*',u'http://www.xiami.com/song/playlist/id/{0}/object_name/default/object_id/0/cat/json')
-				logger.info(self)
 			#专辑
 			elif song_url.find('album') != -1:
 				self._handle(song_url,r'album/(\d+).*',u'http://www.xiami.com/song/playlist/id/{0}/type/1/cat/json')
@@ -43,7 +43,11 @@ class XMusicHandler(tornado.web.RequestHandler):
 			elif song_url.find('collect') != -1:
 				self._handle(song_url,r'collect/(\d+).*',u'http://www.xiami.com/song/playlist/id/{0}/type/3/cat/json')
 			else:
-				self._search_song(song_url,u'http://www.xiami.com/song/playlist/id/{0}/object_name/default/object_id/0/cat/json')
+				self._search_result = []
+				#1.search elastic
+				self._search_song_from_elastic(song_url)
+				#2.search xiami
+				self._search_song_from_xiami(song_url,u'http://www.xiami.com/song/playlist/id/{0}/object_name/default/object_id/0/cat/json')
 		except Exception as error:
 			logger.exception('Exception loggered')
 			self.write("false")
@@ -58,14 +62,14 @@ class XMusicHandler(tornado.web.RequestHandler):
 
 		def _callback(response):
 			result = self._parse_result(response.body)
-			self.write(result)
+			self.write(tornado.escape.json_encode(result))
 			self.finish()
 
 		AsyncHTTPClient().fetch(HTTPRequest(url=locationUrl,headers=self.headers),_callback)
 
 
 	#根据歌曲名搜索
-	def _search_song(self,song,template):
+	def _search_song_from_xiami(self,song,template):
 		url = 'http://www.xiami.com/search/song?key=' + quote(song.encode('utf-8'))
 		
 		@tornado.gen.coroutine
@@ -94,29 +98,46 @@ class XMusicHandler(tornado.web.RequestHandler):
 						song_artists[match.group(1)] = song_artist
 				resp = yield [AsyncHTTPClient().fetch(HTTPRequest(url=locationUrl,headers=self.headers)) for locationUrl in location_urls]
 
-				return_vals = []
 				for i in range(len(resp)):
 					response = resp[i]
 					result = self._parse_result(response.body)
-					result_json = tornado.escape.json_decode(result)[0];
+					result_json = result[0];
 					song_id = result_json['song_id']
 					result_json['title'] = result_json['title'] + '--' + song_artists[song_id]
-					return_vals.append(result_json)
-				self.write(tornado.escape.json_encode(return_vals))	
-				self.finish()
+					self._search_result.append(result_json)
 			except Exception as error:
 				logger.exception('Exception loggered')
-				self.write("false")
+
+			if len(self._search_result) > 0 :
+				self.write(tornado.escape.json_encode(self._search_result))	
+				self.finish()
+			else:
+				self.write('false')
 				self.finish()
 
 
 		AsyncHTTPClient().fetch(HTTPRequest(url=url,headers=self.headers),_callback)
 
 
+	def _search_song_from_elastic(self,song_url):
+
+		def _callback(result):
+			if not result:
+				return
+			self._search_result.append(result)
+			logger.info(self._search_result)
+
+		try:
+			query = '{"query":{"match":{"name":"'+song_url+'"}}}'
+			ElasticHelper().search(query,_callback)	
+		except Exception as error:
+			logger.exception('Exception loggered')
+
+
 	def _parse_result(self,result):
 		result = tornado.escape.json_decode(result)
-		return_vals = []
 		songs = result['data']['trackList']
+		return_vals = []
 		for song in songs:
 			return_val = {}
 			return_val['title'] = song['title']
@@ -127,7 +148,7 @@ class XMusicHandler(tornado.web.RequestHandler):
 
 			return_vals.append(return_val)
 		
-		return tornado.escape.json_encode(return_vals)
+		return return_vals
 
 
 	def write_error(self, status_code, **kwargs):

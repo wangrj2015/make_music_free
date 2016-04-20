@@ -10,7 +10,7 @@ class SuggestHandler(tornado.web.RequestHandler):
 
 	def post(self):
 		info = self.get_argument('info')
-		LoggerFactory.getLogger().info('suggest:' + info)
+		LoggerFactory.getLogger().info('IP:'+self.request.headers.get("X-Real-Ip",'') + ' suggest:' + info)
 		self.write('true')
 
 
