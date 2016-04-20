@@ -125,7 +125,6 @@ class XMusicHandler(tornado.web.RequestHandler):
 			if not result:
 				return
 			self._search_result.append(result)
-			logger.info(self._search_result)
 
 		try:
 			query = '{"query":{"match":{"name":"'+song_url+'"}}}'

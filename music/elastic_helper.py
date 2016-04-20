@@ -5,6 +5,8 @@ import tornado.gen
 import config
 from logger import LoggerFactory
 
+logger = LoggerFactory.getLogger()
+
 class ElasticHelper():
 
 	server_url = config.elastic_server
@@ -12,19 +14,18 @@ class ElasticHelper():
 	default_pic = config.default_pic
 
 	@tornado.gen.coroutine
-	def search(query,callback):
+	def search(self,query,callback):
 		try:
-			response = yield AsyncHTTPClient().fetch(url=server_url + 'music/collect/_search',body=query)
+			response = yield AsyncHTTPClient().fetch(HTTPRequest(url=self.server_url + 'music/collect/_search',method='POST',body=query))
 			response_json = tornado.escape.json_decode(response.body)
-			LoggerFactory.getLogger().info(response_json)
 			data_array = response_json['hits']['hits']
-			if len(data) > 0:
+			if len(data_array) > 0:
 				data = data_array[0]
 				source = data['_source']
 				result = {}
-				result['pic'] = default_pic
+				result['pic'] = self.default_pic
 				result['title'] = source['name'] + '--' + source['artist']
-				result['location'] = source['location']
+				result['location'] = source['location'] + '?attname='
 				callback(result)
 		except Exception as error:
-			LoggerFactory.getLogger().exception()
+			logger.exception('Exception')
