@@ -20,12 +20,12 @@ class ElasticHelper():
 			response_json = tornado.escape.json_decode(response.body)
 			data_array = response_json['hits']['hits']
 			if len(data_array) > 0:
-				data = data_array[0]
-				source = data['_source']
-				result = {}
-				result['pic'] = self.default_pic
-				result['title'] = source['name'] + '--' + source['artist']
-				result['location'] = source['location'] + '?attname='
-				callback(result)
+				for data in data_array:
+					source = data['_source']
+					result = {}
+					result['pic'] = self.default_pic
+					result['title'] = source['name'] + '--' + source['artist']
+					result['location'] = source['location'] + '?attname='
+					callback(result)
 		except Exception as error:
 			logger.exception('Exception')
