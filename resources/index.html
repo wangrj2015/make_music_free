@@ -7,13 +7,36 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
 
 <title>Be happy!!!</title>
+<style type="text/css">
+  #triggerOpenPlayList {
+    position: relative;
+  }
+  #triggerOpenPlayList:hover #playlist{
+    display:block;
+  }
+  #playlist {
+    display: none;
+    position:fixed;
+    top: 64px;
+    right: 90px;
+    margin: 0!important;
+    z-index: 998;
+    min-width: 200px;
+  }
+</style>
 </head>
 <body>
 	<nav>
     	<div class="nav-wrapper">
     		<a href="#" class="brand-logo">&nbsp;&nbsp;&nbsp;&nbsp;Free music</a>
     		<ul id="nav-mobile" class="right hide-on-med-and-down">
-      			<li><a id='suggest' href="#">提点意见</a></li>
+          <li id="triggerOpenPlayList"><a href='#'>播放列表</a>
+            <div class="collection" id="playlist">
+             <!--  <a href="#!" class="collection-item" data-url="xx">adsf</a>
+              <a href="#!" class="collection-item active" data-url="xsx">asdfa</a> -->
+            </div>
+          </li>
+          <li><a id='suggest' href="#">提点意见</a></li>
     		</ul>
     	</div>
   	</nav>
@@ -60,60 +83,187 @@
 <script type="text/javascript" src="js/materialize.min.js"></script>
 <script type="text/javascript">
 	$(document).ready(function(){
-    	$("#getSong").click(function(){
-    		var url = $("#url").val();
-    		if("" == url){
-    			$("#urllabel").html("<font color='red'>下载链接不能为空</font>");
-    			return;
-    		}
-        $("#result").html("");
-        $("#progress").show();
-    		$.get("/xmusic?song_url="+url,function(result){
-          $("#progress").hide();
-          $("#result").html("<div><audio id='audio' src='' controls='controls'></audio></div>");
-          if(!result){
-            $("#result").html("<h3>找不到该歌曲</h3>");
-            return;
-          }
-    			for(var i=0;i<result.length;i++){
-    				data = result[i]
-    				title = data['title']
-    				pic = data['pic']
-    				html = '<div style="padding:30px;float:left;"><div>'+title+'</div><img src="'+pic+'"/><div style="margin-top:5px;"><a style="margin-right:10px;" class="tryListen" href="#">试听</a><a href="'+data['location']+'">下载</a></div></div>';
-    				$("#result").append(html);
-    			}
-          $('.tryListen').on('click', function(e){
-              var elem = e.target;
-              var location = $(elem).next().attr('href');
-              $('#audio').attr('src',location);
-              $('#audio')[0].play();
-          });
+  	$("#getSong").click(function(){
+  		var url = $("#url").val();
+  		if("" == url){
+  			$("#urllabel").html("<font color='red'>下载链接不能为空</font>");
+  			return;
+  		}
+      $("#result").html("");
+      $("#progress").show();
+      $.get("/xmusic?song_url="+url,function(result){
+  		// $.get("http://115.29.195.14:8080/xmusic?song_url="+url,function(result){
+        $("#progress").hide();
+        Music.initDom();
+        if(!result){
+          $("#result").html("<h3>找不到该歌曲</h3>");
+          return;
+        }
+  			for(var i=0;i<result.length;i++){
+  				data = result[i]
+  				title = data['title']
+  				pic = data['pic']
+  				html = '<div style="padding:30px;float:left;"><div>'+title+'</div><img src="'+pic+'"/><div style="margin-top:5px;" data-name="' + title + '"><a style="margin-right:10px;" class="tryListen" href="#">试听</a><a href="'+data['location']+'">下载</a></div></div>';
+  				$("#result").append(html);
+  			}
+        $('.tryListen').on('click', function(e){
+          var elem = e.target;
+          var location = $(elem).next().attr('href');
+          Music.play(location);
+          var name = $(elem).parent().attr("data-name");
+          Playlist.add({name: name, location: location})
+        });
 
-    		},"json");
-    	});
+  		},"json");
+  	});
 
-      $("#suggest").click(function(){
-          $("#suggestDiv").show();
-      });
-
-      $("#submitBtn").click(function(){
-          suggestInfo = $("#suggestInfo").val();
-          if("" == suggestInfo){
-            $("#suggestDiv").hide();
-            return;
-          }
-          $.post("/suggest",{'info':suggestInfo},function(){
-            $("#suggestDiv").hide();
-          });
-      });
-
-      $("#url").keyup(function(event){
-          if(event.keyCode == "13"){
-            $("#getSong").click();
-          }
-      });
-
+    $("#suggest").click(function(){
+      $("#suggestDiv").show();
     });
+
+    $("#submitBtn").click(function(){
+      suggestInfo = $("#suggestInfo").val();
+      if("" == suggestInfo){
+        $("#suggestDiv").hide();
+        return;
+      }
+      $.post("/suggest",{'info':suggestInfo},function(){
+        $("#suggestDiv").hide();
+      });
+    });
+
+    $("#url").keyup(function(event){
+      if(event.keyCode == "13"){
+        $("#getSong").click();
+      }
+    });
+
+    var Hint = {
+      show: function(text) {
+        Materialize.toast(text, 1000, 'rounded');
+      }
+    };
+
+    var Music = {
+      _$dom: null,
+      initDom: function() {
+        var html = $("#result").html();
+        $("#result").html("<div><audio id='audio' src='' controls='controls'></audio></div>" + html);
+        this._$dom = $("#audio");
+      },
+      play: function(location) {
+        if (this._$dom === null) {
+          this.initDom();
+        }
+        if (location && this._$dom.length > 0) {
+          this._$dom.attr('src',location);
+          this._$dom[0].play();
+        }
+      },
+      playList: function() {
+        this.play(Playlist.getActive().location);
+      }
+    };
+
+    var Playlist = {
+      _data: [],
+      _$dom: $("#playlist"),
+      _renderOneSong: function(item) {
+        var str = "";
+        if (!item.isActive) {
+          str =  '<a href="#!" class="collection-item" data-url="' + item.location + '">' + item.name + '</a>';
+        } else {
+          str =  '<a href="#!" class="collection-item active" data-url="' + item.location + '">' + item.name + '</a>';
+        }
+        return str;
+      },
+      _bindEvent: function() {
+        var self = this;
+        this._$dom.off("click").on("click", "a", function(event) {
+          event.preventDefault();
+          var location = $(this).attr("data-url");
+          var _index = -1;
+          $.each(self._data, function(index, value) {
+            if (value.location === location) {
+              _index = index;
+              return;
+            }
+          });
+          if (_index > -1) {
+            var item = self._data[_index];
+          }
+          if (item) {
+            Music.play(item.location);
+            self.setActive(item);
+            $(document).trigger("playListChanged", item);
+          } else {
+            console.error("program error");
+          }
+        });
+      },
+      add: function(item) {
+        this._data.push(item);
+        this.setActive(item);
+        $(document).trigger("playListChanged", item);
+        Hint.show("加入播放列表");
+      },
+      setActive: function(item) {
+        $.each(this._data, function(index, value) {
+          if (value === item) {
+            value.isActive = true;
+          } else {
+            value.isActive =  false;
+          }
+        });
+      },
+      getActive: function() {
+        var item = {};
+        $.each(this._data, function(index, value) {
+          if (value.isActive = true) {
+            item = value;
+            return;
+          }
+        });
+        return item;
+      },
+      render: function() {
+        var str = "";
+        var self = this;
+        $.each(this._data, function(index, value) {
+          str += self._renderOneSong(value);
+        });
+        this._$dom.html(str);
+        this._bindEvent();
+      },
+      chooseSong: function(item) {
+        this.setActive(item);
+        $(document).trigger("playListChanged", item);
+        Music.play(item.location);
+      },
+      init: function() {
+        var self = this;
+        this._$dom.children().each(function() {
+          self._data.push({
+            name: $(this).text(),
+            location: $(this).attr("data-url"),
+          });
+        });
+        if (this._data.length > 0) {
+          this._bindEvent();
+          Music.playList();
+        }
+    
+        $(document).off("playListChanged").on("playListChanged", function(event, item) {
+          Playlist.render();
+        });
+      }
+    };
+
+    Playlist.init();
+
+   
+
+  });
 </script>
 </body>
 </html>
