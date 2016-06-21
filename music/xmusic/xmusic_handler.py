@@ -139,11 +139,15 @@ class XMusicHandler(tornado.web.RequestHandler):
 		return_vals = []
 		for song in songs:
 			return_val = {}
-			return_val['title'] = song['title']
+			return_val['title'] = song['songName']
 			return_val['pic'] = song['pic']
 			return_val['lyric'] = song['lyric_url']
 			return_val['song_id'] = song['song_id']
 			return_val['location'] = util.decode_location(song['location'])
+      if song.get('purview'):
+        location_high = song.get('purview').get('filePath')
+        if location_high and 'http' in location_high:
+          return_val['location'] = location_high      
 
 			return_vals.append(return_val)
 		
