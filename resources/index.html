@@ -23,17 +23,34 @@
     z-index: 998;
     min-width: 200px;
   }
+  /* 在大屏下也居中 */
+  .brand-logo {
+    left: 50%;
+    -webkit-transform: translateX(-50%);
+    -moz-transform: translateX(-50%);
+    -ms-transform: translateX(-50%);
+    -o-transform: translateX(-50%);
+    transform: translateX(-50%);
+  }
+  /* 小屏幕下靠左 */ 
+  @media only screen and (max-width: 992px) {
+    .brand-logo {
+      left: 0!important;
+      transform: none!important;
+    }
+  }
 </style>
 </head>
 <body>
 	<nav>
     	<div class="nav-wrapper">
-    		<a href="#" class="brand-logo">&nbsp;&nbsp;&nbsp;&nbsp;Free music</a>
-    		<ul id="nav-mobile" class="right hide-on-med-and-down">
+    		<a href="#" class="brand-logo">Free music</a>
+        <!-- <ul id="nav-mobile" class="right hide-on-med-and-down"> -->
+    		<ul id="nav-mobile" class="right">
           <li id="triggerOpenPlayList"><a href='#'>播放列表</a>
             <div class="collection" id="playlist">
-             <!--  <a href="#!" class="collection-item" data-url="xx">adsf</a>
-              <a href="#!" class="collection-item active" data-url="xsx">asdfa</a> -->
+              <a href="#!" class="collection-item" data-url="xx">adsf</a>
+              <a href="#!" class="collection-item active" data-url="xsx">asdfa</a>
             </div>
           </li>
           <li><a id='suggest' href="#">提点意见</a></li>
@@ -143,7 +160,6 @@
         Materialize.toast(text, 1000, 'rounded');
       }
     };
-
     var Music = {
       _$dom: null,
       initDom: function() {
@@ -260,7 +276,6 @@
     };
 
     Playlist.init();
-
    
 
   });
