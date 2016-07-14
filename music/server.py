@@ -1,10 +1,11 @@
-# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*- 
 
 import tornado.ioloop
 import tornado.web
 import config
 from logger import LoggerFactory
 from xmusic.xmusic_handler import XMusicHandler
+from cloudmusic.cmusic_handler import CMusicHandler
 from suggest_handler import SuggestHandler
 import sys
 
@@ -12,6 +13,7 @@ import sys
 
 application = tornado.web.Application([
 	(r"/xmusic", XMusicHandler),
+	(r"/cmusic", CMusicHandler),
 	(r"/suggest", SuggestHandler),
 	(r"/download/(.*)", tornado.web.StaticFileHandler, {"path": config.resource_dir}),
 ])
