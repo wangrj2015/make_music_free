@@ -84,6 +84,7 @@ class CMusicHandler(tornado.web.RequestHandler):
 			self.finish()
 		except Exception as error:
 			logger.exception('Exception loggered')
+			self.web_driver.quit()
 			self.web_driver = webdriver.PhantomJS()
 			self.wait = WebDriverWait(web_driver,30)
 			self.write("false")
