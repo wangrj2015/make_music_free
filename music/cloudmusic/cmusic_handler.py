@@ -35,7 +35,6 @@ class CMusicHandler(tornado.web.RequestHandler):
 			if len(song_url)==0 :
 				self.write("false")
 				return
-			logger.info('IP:'+self.request.headers.get("X-Real-Ip",'')+' song_url:' + song_url)
 			self._search_song(song_url)
 		except Exception as error:
 			logger.exception('Exception loggered')
@@ -64,7 +63,7 @@ class CMusicHandler(tornado.web.RequestHandler):
 				title = song_name + '--' + artist_name
 				if song_id:
 					song_ids[int(song_id)] = title
-					location_urls.append("http://127.0.0.1:3000/geturl?id=" + song_id)
+					location_urls.append(config.node_server + "/geturl?id=" + song_id)
 			resp = yield [AsyncHTTPClient().fetch(HTTPRequest(url=locationUrl,headers=self.headers)) for locationUrl in location_urls]
 			return_vals = []
 
@@ -86,7 +85,7 @@ class CMusicHandler(tornado.web.RequestHandler):
 			logger.exception('Exception loggered')
 			self.web_driver.quit()
 			self.web_driver = webdriver.PhantomJS()
-			self.wait = WebDriverWait(web_driver,30)
+			self.wait = WebDriverWait(self.web_driver,30)
 			self.write("false")
 			self.finish()
 
