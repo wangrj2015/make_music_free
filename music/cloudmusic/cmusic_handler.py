@@ -64,7 +64,6 @@ class CMusicHandler(tornado.web.RequestHandler):
 				if song_id:
 					song_ids[int(song_id)] = title
 					location_urls.append(config.node_server + "geturl?id=" + song_id)
-			logger.info(location_urls)
 			resp = yield [AsyncHTTPClient().fetch(HTTPRequest(url=locationUrl,headers=self.headers)) for locationUrl in location_urls]
 			return_vals = []
 
