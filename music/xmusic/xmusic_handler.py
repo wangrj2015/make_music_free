@@ -45,7 +45,7 @@ class XMusicHandler(tornado.web.RequestHandler):
 			else:
 				self._search_result = []
 				#1.search elastic
-				self._search_song_from_elastic(song_url)
+				#self._search_song_from_elastic(song_url)
 				#2.search xiami
 				self._search_song_from_xiami(song_url,u'http://www.xiami.com/song/playlist/id/{0}/object_name/default/object_id/0/cat/json')
 		except Exception as error:
